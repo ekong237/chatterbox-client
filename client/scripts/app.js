@@ -12,19 +12,31 @@ var App = function (){
   
 
   appInstance.init = function() {
+    console.log('initialized!');
 
-    //$(document).ready(function() {
-
-       console.log('initialized!');  
+    $(document).ready(function() {
+      console.log("document ready!");
+        
 
       $('.username').on('click', 
         //console.log('main find main click');
         appInstance.handleUsernameClick );
 
-      $('#send .submit').on('submit', appInstance.handleSubmit );
-    //});
+      $('#send .submit').on('click', function(event) {
+        appInstance.handleSubmit();
+        event.preventDefault();
+      });
+
+      //$('#send .submit').submit(action=event.preventDefault()
+
+    });
+
 
   };
+
+  //$(document).ready(function() {
+
+    
 
   appInstance.send = function(message) {
     $.ajax({
@@ -35,6 +47,7 @@ var App = function (){
       contentType: 'application/json',
       success: function (data) {
         console.log('chatterbox: Message sent');
+        appInstance.fetch();
       },
       error: function (data) {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
@@ -57,26 +70,36 @@ var App = function (){
   appInstance.renderRoom = function() {
     //console.log('I get access to resp:',resp);
     $('#roomSelect').empty();    
-    console.log(appInstance.roomList);
+    //console.log(appInstance.roomList);
     for (var room of appInstance.roomList) {
       //console.log('SET ROOMS:', room);
       //appInstance.renderRoom(room);
       $('#roomSelect').append('<option>' + room + '</option>');
     }
+
+    // when we select a room
+    // we want to fetch by room
+
   };
 
   //console.log('app.js load:',$('#main').find('.username'));
-
+  
   //app.data;
   
   appInstance.afterFetch = function (resp) {
     console.log('chatterbox: Messages retrieved');
     console.log(resp);
-    for (var i = resp.results.length - 1; i > 0; i--) {
+    for (var i = resp.results.length - 1; i >= 0; i--) {
       if (resp.results[i].text) {
-        $('#chats').append('<div><p>' + JSON.stringify(resp.results[i].username) + '</p><p>' + JSON.stringify(resp.results[i].text) + '</p></div>');
 
-        appInstance.roomList.add(resp.results[i]['roomname']);
+        var userN = resp.results[i].username || 'Default User';
+        $('<div>' + userN + ': ' + JSON.stringify(resp.results[i].text) + '</div>').prependTo('#chats');
+
+
+        var room = resp.results[i]['roomname'] || 'lobby';
+        appInstance.roomList.add(room);
+
+        
         appInstance.renderRoom();
       }
       // get the roomname from the message
@@ -87,7 +110,11 @@ var App = function (){
 
   appInstance.fetch = function() {
     //this.data = 
-    var filterObj = { where: {limit: 50} };//{roomname: 'is 4chan'}};
+    var filterObj = { 
+      order: '-createdAt', 
+      limit: 500, 
+      //where: {roomname: 'lobby'}
+    };//{roomname: 'is 4chan'}};
 
       //createdAt: {$gte: JSON.stringify({__type: Date, iso:2017-08-01T18:02:52.249Z}), order: -createdAt} };
       //, createdAt: {$gte: {_type: Date, iso:2011-08-15T18:02:52.249Z}}})
@@ -97,7 +124,7 @@ var App = function (){
     // This is the url you should use to communicate with the parse API server.
       url: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
       type: 'GET',
-      //data: filterObj,//'where={"roomname":"lobby"}',// JSON.stringify({createdAt: {$gte: {__type: Date, iso:2017-08-21T18:02:52.249Z}), limit: 10, order: -createdAt}}',
+      data: filterObj,//'where={"roomname":"lobby"}',// JSON.stringify({createdAt: {$gte: {__type: Date, iso:2017-08-21T18:02:52.249Z}), limit: 10, order: -createdAt}}',
       contentType: 'application/json',
       success: this.afterFetch,//,
       error: function (data) {
@@ -114,39 +141,37 @@ var App = function (){
     return true;
   };
 
-  // appInstance.handleUsernameClick.restore = function () {
-
-  // };
-
-
-
   appInstance.handleSubmit = function () {
     console.log("handled submit!");
+    let params = new URLSearchParams(document.location.search.substring(1));
+    let currentUser = params.get("username"); 
+    var objToSend = {
+      username: JSON.stringify(currentUser),
+      text: $('#message').val(),
+      roomname: 'is 4chan'
+    };
+    appInstance.send(objToSend);
+    // appInstance.fetch();
   };
 
   return appInstance;
-
-
 };
+
 
 var message = {
   username: 'liz',
-  text: 'whatwhat',
+  text: 'what is dog',
   roomname: 'is 4chan'
 };
 
 var app = App();
+
+
 app.fetch();
-app.send(message);
+app.init();
+// app.send(message);
+// app.fetch();
 
-// $(document).ready(function() {
-//   console.log("document ready!");
-//   var myapp = App();
-//   // myapp.fetch();
-//   // return myapp;
-
-
-// });
 
 
 
