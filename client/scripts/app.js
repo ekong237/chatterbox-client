@@ -31,7 +31,7 @@ var App = function (){
       // This is the url you should use to communicate with the parse API server.
       url: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
       type: 'POST',
-      data: message,
+      data: JSON.stringify(message),
       contentType: 'application/json',
       success: function (data) {
         console.log('chatterbox: Message sent');
@@ -52,33 +52,61 @@ var App = function (){
     $('#chats').append('<p class="username">' + message + '</p>');
   };
 
-  appInstance.renderRoom = function(roomName) {
-    $('#roomSelect').append('<option>' + roomName + '</option>');
+  appInstance.roomList = new Set();
+
+  appInstance.renderRoom = function() {
+    //console.log('I get access to resp:',resp);
+    $('#roomSelect').empty();    
+    console.log(appInstance.roomList);
+    for (var room of appInstance.roomList) {
+      //console.log('SET ROOMS:', room);
+      //appInstance.renderRoom(room);
+      $('#roomSelect').append('<option>' + room + '</option>');
+    }
   };
 
   //console.log('app.js load:',$('#main').find('.username'));
 
   //app.data;
+  
+  appInstance.afterFetch = function (resp) {
+    console.log('chatterbox: Messages retrieved');
+    console.log(resp);
+    for (var i = resp.results.length - 1; i > 0; i--) {
+      if (resp.results[i].text) {
+        $('#chats').append('<div><p>' + JSON.stringify(resp.results[i].username) + '</p><p>' + JSON.stringify(resp.results[i].text) + '</p></div>');
+
+        appInstance.roomList.add(resp.results[i]['roomname']);
+        appInstance.renderRoom();
+      }
+      // get the roomname from the message
+      // renderRoom on that roomname
+    }
+    //return data;
+  };
 
   appInstance.fetch = function() {
     //this.data = 
+    var filterObj = { where: {limit: 50} };//{roomname: 'is 4chan'}};
+
+      //createdAt: {$gte: JSON.stringify({__type: Date, iso:2017-08-01T18:02:52.249Z}), order: -createdAt} };
+      //, createdAt: {$gte: {_type: Date, iso:2011-08-15T18:02:52.249Z}}})
+      
+    
     $.ajax({
     // This is the url you should use to communicate with the parse API server.
       url: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
       type: 'GET',
-      //data: message,
+      //data: filterObj,//'where={"roomname":"lobby"}',// JSON.stringify({createdAt: {$gte: {__type: Date, iso:2017-08-21T18:02:52.249Z}), limit: 10, order: -createdAt}}',
       contentType: 'application/json',
-      success: function (data) {
-        console.log('chatterbox: Messages retrieved');
-        console.log(data);
-        return data;
-      }//,
-  // error: function (data) {
-  //   // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
-  //   console.error('chatterbox: Failed to send message');
-    // }
+      success: this.afterFetch,//,
+      error: function (data) {
+        // See: https://developer.mozilla.org/en-US/docs/Web/API/console.error
+        console.error('chatterbox: Failed to get message');
+      }
     });
   };
+
 
 
   appInstance.handleUsernameClick = function() {
@@ -102,12 +130,14 @@ var App = function (){
 };
 
 var message = {
-  username: 'shawndrost',
-  text: 'trololo',
-  roomname: '4chan'
+  username: 'liz',
+  text: 'whatwhat',
+  roomname: 'is 4chan'
 };
 
 var app = App();
+app.fetch();
+app.send(message);
 
 // $(document).ready(function() {
 //   console.log("document ready!");
