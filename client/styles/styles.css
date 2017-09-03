@@ -1,15 +1,15 @@
 body {
-    background: #eee;
+    background: MediumOrchid;
     text-align: center;
     padding: 0 25px;
-    font-family: arial, sans-serif;
+    font-family: "Comic Sans MS", "Comic Sans";
 }
 
 #main, #chats {
     width: 500px;
     margin: auto;
     text-align: left;
-    background: white;
+    background: MediumPurple;
     padding: 50px 60px;
     border: solid #ddd;
     border-width: 0 1px 1px 1px;
@@ -62,11 +62,18 @@ form input[type=text] {
 .chat {
     padding: 5px;
     margin-bottom: 5px;
-    background-color: #eee;
+    background-color: lightBlue;
 }
 
 .chat .username {
     font-weight: 800;
+    color: purple;
+}
+
+.username:hover {
+    font-weight: 800;
+    color: green;
+    cursor: pointer;
 }
 
 .chat:hover {

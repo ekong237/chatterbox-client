@@ -33,6 +33,9 @@ var App = function (){
         console.log($('#roomSelect').val());
         appInstance.fetch();
       });
+
+      appInstance.fetch();
+
     });
   };
 
@@ -63,9 +66,9 @@ var App = function (){
     $('#chats').empty();
   };
 
-  appInstance.renderMessage = function(message) {
-    $('#chats').append('<p class="username">' + message + '</p>');
-  };
+  // appInstance.renderMessage = function(message) {
+  //   $('#chats').append('<p class="chat">' + message + '</p>');
+  // };
 
   appInstance.roomList = new Set();
 
@@ -95,7 +98,7 @@ var App = function (){
       if (resp.results[i].text) {
 
         var userN = resp.results[i].username || 'Default User';
-        $('<div>' + userN + ': ' + JSON.stringify(resp.results[i].text) + '</div>').prependTo('#chats');
+        $('<div class="chat"><span class="username">' + userN + '</span>: <span>' + JSON.stringify(resp.results[i].text) + '</span></div>').prependTo('#chats');
 
 
         var room = resp.results[i]['roomname'] || 'lobby';
