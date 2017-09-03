@@ -29,9 +29,11 @@ var App = function (){
 
       //$('#send .submit').submit(action=event.preventDefault()
 
+      $('#roomSelect').on('change', function(event) {
+        console.log($('#roomSelect').val());
+        appInstance.fetch();
+      });
     });
-
-
   };
 
   //$(document).ready(function() {
@@ -98,6 +100,7 @@ var App = function (){
 
         var room = resp.results[i]['roomname'] || 'lobby';
         appInstance.roomList.add(room);
+        //console.log(room);
 
         
         appInstance.renderRoom();
@@ -108,23 +111,30 @@ var App = function (){
     //return data;
   };
 
-  appInstance.fetch = function() {
+  appInstance.fetch = function() { 
     //this.data = 
+
+    //var currentRoom = $('#roomSelect').val() || 'lobby';
+    //roomName = currentRoom || 'lobby';
+
     var filterObj = { 
       order: '-createdAt', 
-      limit: 500, 
-      //where: {roomname: 'lobby'}
+      limit: 100, 
+      //where: { roomname: currentRoom}
+      //where: {roomname: JSON.stringify(currentRoom)}
     };//{roomname: 'is 4chan'}};
 
       //createdAt: {$gte: JSON.stringify({__type: Date, iso:2017-08-01T18:02:52.249Z}), order: -createdAt} };
       //, createdAt: {$gte: {_type: Date, iso:2011-08-15T18:02:52.249Z}}})
-      
+    if ($('#roomSelect').val()) {
+      filterObj.where = { roomname: $('#roomSelect').val()};
+    }  
     
     $.ajax({
     // This is the url you should use to communicate with the parse API server.
       url: 'http://parse.sfm6.hackreactor.com/chatterbox/classes/messages',
       type: 'GET',
-      data: filterObj,//'where={"roomname":"lobby"}',// JSON.stringify({createdAt: {$gte: {__type: Date, iso:2017-08-21T18:02:52.249Z}), limit: 10, order: -createdAt}}',
+      data: filterObj, //'where={"roomname":"lobby"}',// JSON.stringify({createdAt: {$gte: {__type: Date, iso:2017-08-21T18:02:52.249Z}), limit: 10, order: -createdAt}}',
       contentType: 'application/json',
       success: this.afterFetch,//,
       error: function (data) {
